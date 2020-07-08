@@ -50,10 +50,9 @@
             this.UploadButton = new System.Windows.Forms.Button();
             this.UseProxyCheckBox = new System.Windows.Forms.CheckBox();
             this.OneDriveTypeCombo = new System.Windows.Forms.ComboBox();
-            this.FileWatcher = new System.IO.FileSystemWatcher();
             this.Notificacao = new System.Windows.Forms.NotifyIcon(this.components);
+            this.button2 = new System.Windows.Forms.Button();
             this.OneDriveCommandsPanel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.FileWatcher)).BeginInit();
             this.SuspendLayout();
             // 
             // AuthenticationBrowser
@@ -211,6 +210,7 @@
             // OneDriveCommandsPanel
             // 
             this.OneDriveCommandsPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.OneDriveCommandsPanel.Controls.Add(this.button2);
             this.OneDriveCommandsPanel.Controls.Add(this.button1);
             this.OneDriveCommandsPanel.Controls.Add(this.CreateFolderButton);
             this.OneDriveCommandsPanel.Controls.Add(this.UploadButton);
@@ -226,7 +226,7 @@
             this.button1.Location = new System.Drawing.Point(3, 48);
             this.button1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(298, 74);
+            this.button1.Size = new System.Drawing.Size(298, 64);
             this.button1.TabIndex = 26;
             this.button1.Text = "Executar POSTGRES";
             this.button1.UseVisualStyleBackColor = true;
@@ -279,20 +279,23 @@
             this.OneDriveTypeCombo.Size = new System.Drawing.Size(216, 24);
             this.OneDriveTypeCombo.TabIndex = 19;
             // 
-            // FileWatcher
-            // 
-            this.FileWatcher.EnableRaisingEvents = true;
-            this.FileWatcher.SynchronizingObject = this;
-            this.FileWatcher.Changed += new System.IO.FileSystemEventHandler(this.FileWatcher_Changed);
-            this.FileWatcher.Created += new System.IO.FileSystemEventHandler(this.FileWatcher_Created);
-            this.FileWatcher.Renamed += new System.IO.RenamedEventHandler(this.FileWatcher_Renamed);
-            // 
             // Notificacao
             // 
             this.Notificacao.Icon = ((System.Drawing.Icon)(resources.GetObject("Notificacao.Icon")));
-            this.Notificacao.Text = "notifyIcon1";
+            this.Notificacao.Text = "OpenNext OneDrive";
             this.Notificacao.Visible = true;
             this.Notificacao.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.Notificacao_MouseDoubleClick);
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(0, 118);
+            this.button2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(298, 64);
+            this.button2.TabIndex = 27;
+            this.button2.Text = "Adicionar Usuario";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // MainForm
             // 
@@ -325,7 +328,6 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.OneDriveCommandsPanel.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.FileWatcher)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -353,8 +355,8 @@
         private System.Windows.Forms.CheckBox UseProxyCheckBox;
         private System.Windows.Forms.ComboBox OneDriveTypeCombo;
         private System.Windows.Forms.Button button1;
-        private System.IO.FileSystemWatcher FileWatcher;
         private System.Windows.Forms.NotifyIcon Notificacao;
+        private System.Windows.Forms.Button button2;
     }
 }
 

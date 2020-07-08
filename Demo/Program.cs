@@ -1,5 +1,7 @@
-﻿using System;
+﻿using OpenNextOneDrive;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -16,7 +18,15 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            if (File.Exists("config.json"))
+            {
+                Application.Run(new MainForm());
+            }
+            if (!File.Exists("config.json"))
+            {
+                Application.Run(new FrmConfgiuracao());
+            }
+           
         }
     }
 }

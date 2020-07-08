@@ -16,14 +16,14 @@ using Newtonsoft.Json;
 namespace KoenZomers.OneDrive.Api
 {
     /// <summary>
-    /// Base OneDrive API functionality that is valid for either the Consumer OneDrive or the OneDrive for Business platform
+    /// Base da Api
     /// </summary>
     public abstract class OneDriveApi
     {
         #region Properties
 
         /// <summary>
-        /// The oAuth 2.0 Application Client ID
+        ///  oAuth 2.0  Client ID
         /// </summary>
         public string ClientId { get; protected set; }
 
@@ -33,42 +33,42 @@ namespace KoenZomers.OneDrive.Api
         public string ClientSecret { get; protected set; }
 
         /// <summary>
-        /// If provided, this proxy will be used for communication with the OneDrive API. If not provided, no proxy will be used.
+        /// Proxy Interface
         /// </summary>
         public IWebProxy ProxyConfiguration { get; set; }
 
         /// <summary>
-        /// If provided along with a proxy configuration, these credentials will be used to authenticate to the proxy. If omitted, the default system credentials will be used.
+        /// Aplicao a configuracao do Proxy nas requisicoes
         /// </summary>
         public NetworkCredential ProxyCredential { get; set; }
 
         /// <summary>
-        /// Authorization token used for requesting tokens
+        /// Acessa o Token de Autorizacao
         /// </summary>
         public string AuthorizationToken { get; private set; }
 
         /// <summary>
-        /// Access Token for communicating with OneDrive
+        /// Acessa o Token
         /// </summary>
         public OneDriveAccessToken AccessToken { get; protected set; }
 
         /// <summary>
-        /// Date and time until which the access token should be valid based on the information provided by the oAuth provider
+        /// Validade do Token
         /// </summary>
         public DateTime? AccessTokenValidUntil { get; protected set; }
 
         /// <summary>
-        /// Base URL of the OneDrive API
+        ///  URL Base do OneDrive API
         /// </summary>
         protected string OneDriveApiBaseUrl { get; set; }
 
         /// <summary>
-        /// Defines the maximum allowed file size that can be used for basic uploads
+        /// Define o maximo de peso do arquivo para UPLOAD
         /// </summary>
         public static long MaximumBasicFileUploadSizeInBytes = 4 * 1024000;
 
         /// <summary>
-        /// Size of the chunks to upload when using the resumable upload method
+        /// Define o Chunck para Split do arquivo em UPLOAD
         /// </summary>
         public long ResumableUploadChunkSizeInBytes = 5000000;
 
@@ -77,7 +77,7 @@ namespace KoenZomers.OneDrive.Api
         #region Abstract Properties
 
         /// <summary>
-        /// The url to provide as the redirect URL after successful authentication
+        /// O URL para fornecer como o URL de redirecionamento após autenticação bem-sucedida
         /// </summary>
         public abstract string AuthenticationRedirectUrl { get; set; }
 
@@ -541,6 +541,11 @@ namespace KoenZomers.OneDrive.Api
         public virtual async Task<OneDriveItem> GetItemFromDriveById(string id, OneDriveDrive drive)
         {
             return await GetData<OneDriveItem>(string.Concat("drives/", drive.Id, "/items/", id));
+        }
+
+        public virtual async Task<OneDriveItem> GetDriveClient(string folder)
+        {
+            return await GetData<OneDriveItem>(string.Concat("drive/root:/", folder));
         }
 
         /// <summary>
