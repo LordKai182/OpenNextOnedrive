@@ -952,6 +952,39 @@ namespace KoenZomers.OneDrive.Api
             return await UploadFileAs(fileStream, fileName, oneDriveItem);
         }
 
+        public virtual async Task<OneDriveItem> UploadFileAsBkp(string filePath, string fileName, OneDriveItem parentFolder, string FolderID)
+        {
+            if (!File.Exists(filePath))
+            {
+                throw new ArgumentException("Provided file could not be found", nameof(filePath));
+            }
+
+            // Get a reference to the file to upload
+            var fileToUpload = new FileInfo(filePath);
+
+            // If no filename has been provided, use the same filename as the original file has
+            if (string.IsNullOrEmpty(fileName))
+            {
+                fileName = fileToUpload.Name;
+            }
+
+            // Verify if the filename does not contain any for OneDrive illegal characters
+            if (!ValidFilename(fileName))
+            {
+                throw new ArgumentException("Provided file contains illegal characters in its filename", nameof(filePath));
+            }
+
+            // Verify which upload method should be used
+            if (fileToUpload.Length <= MaximumBasicFileUploadSizeInBytes)
+            {
+                // Use the basic upload method                
+                return await UploadFileViaSimpleUploadBkp2(filePath, parentFolder, FolderID);
+            }
+
+            // Use the resumable upload method
+            return await UploadFileViaResumableUploadBackup(fileToUpload, fileName ,parentFolder, FolderID, null);
+        }
+
         /// <summary>
         /// Uploads the provided file to OneDrive using the provided filename
         /// </summary>
@@ -1042,6 +1075,10 @@ namespace KoenZomers.OneDrive.Api
             return await CreateFolderInternal(!string.IsNullOrEmpty(parentPath) ? string.Concat("drive/root:/", parentPath, ":/children") : "drive/root/children", folderName);
         }
 
+        public virtual async Task<OneDriveItem> CreateFolderBanco(string driveId, string folderName)
+        {
+            return await CreateFolderInternal(string.Concat("drives/",driveId, "/items/01RTWHXB54V3LUNGSB3JF3RTDPW3IJYMWM/children"), folderName);
+        }
         /// <summary>
         /// Creates a new folder under the provided parent OneDrive item with the provided name
         /// </summary>
@@ -1264,6 +1301,12 @@ namespace KoenZomers.OneDrive.Api
             var fileInfo = new FileInfo(filePath);
             return await UpdateFileViaSimpleUpload(fileInfo, oneDriveItem);
         }
+        public async Task<OneDriveItem> UploadFileViaSimpleUploadBkp2(string filePath, OneDriveItem oneDriveItem, string FolderId)
+        {
+            // Read the file to upload
+            var fileInfo = new FileInfo(filePath);
+            return await UpdateFileViaSimpleUploadBkp(fileInfo,fileInfo.Name,oneDriveItem, FolderId);
+        }
 
         /// <summary>
         /// Performs a file upload to OneDrive overwriting an existing file using the simple OneDrive API. Best for small files on reliable network connections.
@@ -1276,6 +1319,13 @@ namespace KoenZomers.OneDrive.Api
             using (var fileStream = file.OpenRead())
             {
                 return await UpdateFileViaSimpleUpload(fileStream, oneDriveItem);
+            }
+        }
+        public async Task<OneDriveItem> UpdateFileViaSimpleUploadBkp(FileInfo file,string fileName, OneDriveItem oneDriveItem, string FolderId)
+        {
+            using (var fileStream = file.OpenRead())
+            {
+                return await UpdateFileViaSimpleUpload2(fileStream, fileName, oneDriveItem, FolderId);
             }
         }
 
@@ -1310,6 +1360,20 @@ namespace KoenZomers.OneDrive.Api
                 completeUrl = string.Concat("drive/items/", oneDriveItem.Id, "/content");
             }
 
+            completeUrl = ConstructCompleteUrl(completeUrl);
+
+            return await UploadFileViaSimpleUploadInternal(fileStream, completeUrl);
+        }
+
+        public async Task<OneDriveItem> UpdateFileViaSimpleUpload2(Stream fileStream, string fileName ,OneDriveItem oneDriveItem, string FolderId)
+        {
+            // Construct the complete URL to call
+            string completeUrl;
+            
+                // Item will be uploaded to another drive
+                completeUrl = string.Concat("drives/", oneDriveItem.RemoteItem.ParentReference.DriveId, "/items/", FolderId, "/children/",fileName,"/content");
+            
+           
             completeUrl = ConstructCompleteUrl(completeUrl);
 
             return await UploadFileViaSimpleUploadInternal(fileStream, completeUrl);
@@ -1446,7 +1510,19 @@ namespace KoenZomers.OneDrive.Api
             var file = new FileInfo(filePath);
             return await UploadFileViaResumableUpload(file, fileName, parentFolder, null);
         }
-
+        public async Task<OneDriveItem> UploadFileViaResumableUploadBackup(string filePath, string fileName, string FileId ,OneDriveItem parentFolder)
+        {
+            var file = new FileInfo(filePath);
+            return await UploadFileViaResumableUploadBackup(file, fileName,parentFolder,FileId ,null);
+        }
+        public virtual async Task<OneDriveItem> UploadFileViaResumableUploadBackup(FileInfo file, string fileName, OneDriveItem parentFolder, string FileId ,long? fragmentSizeInBytes)
+        {
+            // Open the source file for reading
+            using (var fileStream = file.OpenRead())
+            {
+                return await UploadFileViaResumableUploadBackup(fileStream, fileName, parentFolder, FileId, fragmentSizeInBytes);
+            }
+        }
         /// <summary>
         /// Uploads a file to OneDrive using the resumable file upload method
         /// </summary>
@@ -1477,6 +1553,13 @@ namespace KoenZomers.OneDrive.Api
             var oneDriveUploadSession = await CreateResumableUploadSession(fileName, parentFolder);
             return await UploadFileViaResumableUploadInternal(fileStream, oneDriveUploadSession, fragmentSizeInBytes);
         }
+
+        public virtual async Task<OneDriveItem> UploadFileViaResumableUploadBackup(Stream fileStream, string fileName, OneDriveItem parentFolder, string FolderId ,long? fragmentSizeInBytes)
+        {
+            var oneDriveUploadSession = await CreateResumableUploadSessionBackup(fileName, parentFolder, FolderId);
+            return await UploadFileViaResumableUploadInternal(fileStream, oneDriveUploadSession, fragmentSizeInBytes);
+        }
+
 
         /// <summary>
         /// Uploads a file to OneDrive updating the contents of an existing file using the resumable method. Better for large files or unstable network connections.
@@ -1726,6 +1809,32 @@ namespace KoenZomers.OneDrive.Api
                 // Item will be uploaded to the current user its drive
                 completeUrl = string.Concat("drive/items/", oneDriveFolder.Id, ":/", fileName, ":/upload.createSession");
             }
+
+            completeUrl = ConstructCompleteUrl(completeUrl);
+
+            // Construct the OneDriveUploadSessionItemContainer entity with the upload details
+            // Add the conflictbehavior header to always overwrite the file if it already exists on OneDrive
+            var uploadItemContainer = new OneDriveUploadSessionItemContainer
+            {
+                Item = new OneDriveUploadSessionItem
+                {
+                    FilenameConflictBehavior = NameConflictBehavior.Replace
+                }
+            };
+
+            // Call the OneDrive webservice
+            var result = await SendMessageReturnOneDriveItem<OneDriveUploadSession>(uploadItemContainer, HttpMethod.Post, completeUrl, HttpStatusCode.OK);
+            return result;
+        }
+
+        protected virtual async Task<OneDriveUploadSession> CreateResumableUploadSessionBackup(string fileName, OneDriveItem oneDriveFolder, string FolderId)
+        {
+            // Construct the complete URL to call
+            string completeUrl;
+           
+                // Item will be uploaded to another drive
+                completeUrl = string.Concat("drives/", oneDriveFolder.RemoteItem.ParentReference.DriveId, "/items/", FolderId, ":/", fileName, ":/upload.createSession");
+           
 
             completeUrl = ConstructCompleteUrl(completeUrl);
 

@@ -223,6 +223,7 @@ namespace KoenZomers.OneDrive.Api
         public override async Task<OneDriveItemCollection> GetSharedWithMe()
         {
             var oneDriveItems = await GetData<OneDriveItemCollection>("drive/sharedWithMe");
+           
             return oneDriveItems;
         }
 
