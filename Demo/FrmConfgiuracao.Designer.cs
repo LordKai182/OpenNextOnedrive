@@ -103,23 +103,27 @@
             // 
             // button1
             // 
+            this.button1.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            this.button1.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.button1.Location = new System.Drawing.Point(669, 24);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(121, 46);
             this.button1.TabIndex = 23;
             this.button1.Text = "Salvar";
-            this.button1.UseVisualStyleBackColor = true;
+            this.button1.UseVisualStyleBackColor = false;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // FrmConfgiuracao
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.ClientSize = new System.Drawing.Size(806, 524);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.tabControlConfig);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.CbTipoConfiguracao);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.MaximizeBox = false;
             this.Name = "FrmConfgiuracao";
             this.Text = "Configracoes";

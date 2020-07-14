@@ -21,7 +21,7 @@ namespace OpenNextOneDrive.UserControls
 
         private void TxtCnpj_TextChanged(object sender, EventArgs e)
         {
-            _configuracao.Cnpj = TxtCnpj.Text;
+            _configuracao.Cnpj = TxtCnpj.Text.Replace(".", "").Replace("-", "").Replace("/", "").Replace(",", ""); ;
         }
 
         private void TxtNome_TextChanged(object sender, EventArgs e)

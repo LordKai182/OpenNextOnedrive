@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <doc>
     <assembly>
-        <name>KoenZomers.OneDrive.Api</name>
+        <name>OpenNext.OneDrive.Api</name>
     </assembly>
     <members>
         <member name="T:KoenZomers.OneDrive.Api.Entities.OneDriveAccessToken">

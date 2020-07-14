@@ -9,6 +9,7 @@ using System.Configuration;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace KoenZomers.OneDrive.AuthenticatorApp
@@ -17,12 +18,11 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
     {
         #region Properties
 
-        private IniFile MyIni;
 
         private Configuracao _configuracao;
 
         private readonly Configuration _configuration;
-
+        ConfiguracaoCliente cliente = new ConfiguracaoCliente();
 
         public OneDriveApi OneDriveApi;
 
@@ -34,7 +34,7 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
 
         public MainForm()
         {
-            MyIni = new IniFile("Config.init");
+         
             ConfigurationReceiver();
             InitializeComponent();
             _configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
@@ -73,12 +73,18 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-
-            OneDriveTypeCombo.SelectedIndex = OneDriveTypeCombo.Items.Count - 1;
+            //if ((Control.ModifierKeys & Keys.Shift) != 0)
+            //{
+            //    MessageBox.Show("jkhjkhjkhjkhjk");
+            //}
+                OneDriveTypeCombo.SelectedIndex = OneDriveTypeCombo.Items.Count - 1;
+            IniciaOneDrive();
+        }
+        private void IniciaOneDrive()
+        {
             AccessTokenTextBox.Text = string.Empty;
 
             InitiateOneDriveApi();
-            //AtivaWatecher();
             var signoutUri = OneDriveApi.GetSignOutUri();
             AuthenticationBrowser.Navigate(signoutUri);
             ConfigurationReceiver();
@@ -91,36 +97,47 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
 
             foreach (var cCliente in _configuracao.Cliente)
             {
-                //Check if Directory Exisits
+                 if (cCliente.Configuracao.TipoConfig == 1)
+                {
+                    AgendarTarefaAccess(
+                        "TarefaAccess" + cCliente.Cnpj,
+                        cCliente.Configuracao.PastaBkp,
+                        cCliente.Configuracao.CaminhoDump
+                        );
+                }
+                else
+                {
+                    AgendarTarefaPostgeSQL(
+                         "TarefaPostgreSQL" + cCliente.Cnpj,
+                        cCliente.Configuracao.PastaBkp + "/Bkp.sql",
+                        cCliente.Configuracao.CaminhoDump
+                        );
+                }
+               
                 if (Directory.Exists(cCliente.Configuracao.PastaBkp))
                 {
+                 
                     FileSystemWatcher oFileWatcher = new FileSystemWatcher();
                     DirectoryInfo dir = new DirectoryInfo(cCliente.Configuracao.PastaBkp);
-                    //Set the path that you want to monitor.
-                    oFileWatcher.Path = dir.FullName; //cCliente.Configuracao.PastaBkp;
+                    oFileWatcher.Path = dir.FullName; 
 
-                    //Set the Filter Expression.
+                  
                     oFileWatcher.Filter = "*.*";
 
-                  
-                        oFileWatcher.Changed +=
-                          new System.IO.FileSystemEventHandler(FileWatcher_Changed);
-                   
+
+                    oFileWatcher.Created +=
+                      new System.IO.FileSystemEventHandler(FileWatcher_Created);
 
                   
-                        oFileWatcher.Created +=
-                          new System.IO.FileSystemEventHandler(FileWatcher_Created);
-
-                    oFileWatcher.Renamed  += FileWatcher_Renamed;
 
                     oFileWatcher.EnableRaisingEvents = true;
 
-                    //Add a new instance of FileWatcher 
+                  
                     aFileWatcherInstance.Add(oFileWatcher);
                 }
             }
         }
-      
+
         private async void AuthenticationBrowser_Navigated(object sender, WebBrowserNavigatedEventArgs e)
         {
             CurrentUrlTextBox.Text = e.Url.ToString();
@@ -152,12 +169,7 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
 
         private void Step1Button_Click(object sender, EventArgs e)
         {
-            AccessTokenTextBox.Text = string.Empty;
-
-            InitiateOneDriveApi();
-
-            var signoutUri = OneDriveApi.GetSignOutUri();
-            AuthenticationBrowser.Navigate(signoutUri);
+            IniciaOneDrive();
         }
 
 
@@ -227,22 +239,35 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
 
         private void button1_Click(object sender, EventArgs e)
         {
-            string command = @"C:\\PostgreSQL\\pg10\bin\\pg_dump.exe -h 127.0.0.1 -p 5432 -U postgres -F c -b -v -f C:\\temp\\BkpSql.sql SwitchDB";
-            string saida = ExecutarCMD(command);
-            //string command2 = @"C:\\PostgreSQL\\pg10\bin\\pg_dump.exe -h 127.0.0.1 -p 5432 -U postgres -F c -b -v -f C:\\temp2\\BkpSql.sql SwitchDB";
-            //saida += ExecutarCMD(command2);
-            File.WriteAllText("NomeArquivo.txt", saida);
+            AgendarTarefaPostgeSQL("TarefaTestePostgres", "C:/temp/BkpSql.sql", "C:/PostgreSQL/pg10/bin/pg_dump.exe");
+            AgendarTarefaAccess("TesteTarefaAcess", @"C:\temp", @"C:\temp2\BkpSql.mdb");
         }
-        private void AgendarTarefa(string NomeTarefa, string PastaBkp, string CaminhoDump)
+        private void AgendarTarefaPostgeSQL(string NomeTarefa, string PastaBkp, string CaminhoDump)
         {
-            string comandoFormatado = 
-            String.Format("schtasks /create /sc hourly /mo 1 /sd 03/01/2002 /tn {0} /tr \"{2} -h 127.0.0.1 -p 5432 -U postgres -F c -b -v -f {1} SwitchDB\"",
+            char quote = '"';
+            string doubleQuotedPath = quote + PastaBkp + quote;
+            string comandoFormatado =
+            String.Format(@"schtasks /create /sc hourly /mo 1 /sd 03/01/2002 /tn  {0} /tr "+quote+" {2} -h 127.0.0.1 -p 5432 -U postgres -F c -b -v -f {1} SwitchDB "+ quote+" ",
             NomeTarefa,
             PastaBkp,
             CaminhoDump
             );
             ExecutarCMD(comandoFormatado);
         }
+
+        private void AgendarTarefaAccess(string NomeTarefa, string PastaBkp, string CaminhoArquivo)
+        {
+            char quote = '"';
+            string comandoFormatado =
+            String.Format(@"schtasks /create /sc hourly /mo 1 /sd 03/01/2002 /tn  {0} /tr " + quote + "cmd /c  copy {2} {1}" + quote + " ",
+            NomeTarefa,
+            PastaBkp,
+            CaminhoArquivo
+            );
+            ExecutarCMD(comandoFormatado);
+        }
+
+
         public static string ExecutarCMD(string comando)
         {
             System.Diagnostics.Process.Start("CMD.exe", @"/C " + comando).WaitForExit();
@@ -251,47 +276,77 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
 
         }
 
-        private void FileWatcher_Changed(object sender, FileSystemEventArgs e)
-        {
-            //string[] teste = e.FullPath.Split('\\');
-            //string nomeCOncatenado = string.Empty;
-            //if (e.Name.Contains(".sql"))
-            //{
-            //    nomeCOncatenado = "BKP-" + DiaDaSemana() + ".zip";
-            //    using (ZipFile zip = new ZipFile())
-            //    {
-            //        zip.AddFile(e.FullPath, "");
-                   
-            //       zip.Save(BuscaCliente(teste[0]).Configuracao.PastaBkp + nomeCOncatenado);
-                   
-            //    }
-            //}
-        }
+      
         private ConfiguracaoCliente BuscaCliente(string PastaBkp)
         {
-           return  _configuracao.Cliente.First(c => c.Configuracao.PastaBkp == PastaBkp);
+            
+            return _configuracao.Cliente.First(c => c.Configuracao.PastaBkp == PastaBkp);
         }
         private void FileWatcher_Created(object sender, FileSystemEventArgs e)
-         {
+        {
             string nomeCOncatenado = string.Empty;
             string[] teste = e.FullPath.Split('\\');
-            if (e.Name.Contains(".sql"))
+
+            if (e.Name.Contains(".sql") || e.Name.Contains(".mdb"))
             {
+                Thread.Sleep(3000);
                 nomeCOncatenado = "BKP-" + DiaDaSemana() + ".zip";
                 using (ZipFile zip = new ZipFile())
                 {
+                    
+                    if (e.Name.Contains(".sql"))
+                    {
+                      cliente = BuscaCliente(teste[0] + "\\" + teste[1]);
+
+                    }
+                    if (e.Name.Contains(".mdb"))
+                    {
+                        cliente = BuscaCliente(teste[0] + "\\" + teste[1]);
+
+                    }
+                    zip.SaveProgress += Zip_SaveProgress;
+                    zip.CompressionMethod = Ionic.Zip.CompressionMethod.Deflate;
+                    zip.CompressionLevel = Ionic.Zlib.CompressionLevel.BestCompression;
+                    zip.UseZip64WhenSaving = Zip64Option.AsNecessary;
                     zip.AddFile(e.FullPath, "");
-                    if(!File.Exists(BuscaCliente(teste[0]+"/"+teste[1]+"/").Configuracao.PastaBkp + nomeCOncatenado))
-                    zip.Save(BuscaCliente(teste[0] + "/" + teste[1] + "/").Configuracao.PastaBkp + nomeCOncatenado);
-                 
+                    if (!File.Exists(cliente.Configuracao.PastaBkp +"\\"+ nomeCOncatenado))
+                        zip.Save(cliente.Configuracao.PastaBkp + "\\" + nomeCOncatenado);
+
 
                 }
             }
 
         }
-        void FileSystemWatcherCreated(object sender, System.IO.FileSystemEventArgs e)
+        private void Zip_SaveProgress(object sender, SaveProgressEventArgs e)
         {
-            
+            if (e.EventType == ZipProgressEventType.Saving_Started)
+                AppendTextBox("Proccesso de Compressao Iniciado.");
+            if (e.EventType == ZipProgressEventType.Saving_AfterSaveTempArchive)
+            {
+                AppendTextBox("Proccesso de Compressao Realizado com Sucesso. " + e.ArchiveName);
+                UploadDoArquivo(e.ArchiveName);
+            }
+
+
+
+            if (e.BytesTransferred > 0 && e.TotalBytesToTransfer > 0)
+            {
+                int progress = (int)Math.Floor((decimal)((e.BytesTransferred * 100) / e.TotalBytesToTransfer));
+                AppendTextBoxProgress("Compressao em :" + Convert.ToString(progress) + "%");
+                Application.DoEvents();
+            }
+
+           
+        }
+
+        public void AppendTextBoxProgress(string value)
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(new Action<string>(AppendTextBoxProgress), new object[] { value });
+                return;
+            }
+            JsonResultTextBox.Text = value;
         }
         public void AppendTextBox(string value)
         {
@@ -302,66 +357,52 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
             }
             JsonResultTextBox.Text += Environment.NewLine + value;
         }
-        private async void FileWatcher_Renamed(object sender, RenamedEventArgs e)
+
+        private async void UploadDoArquivo(string arquivo)
         {
-            if (e.Name.Substring(e.Name.Length - 4, 4).ToString() == ".zip")
+
+            EventHandler<OneDriveUploadProgressChangedEventArgs> progressHandler = delegate (object s, OneDriveUploadProgressChangedEventArgs a) { AppendTextBox( $"Uploading - {a.BytesSent} bytes enviados / {a.TotalBytes} bytes total ({a.ProgressPercentage}%){Environment.NewLine}"); };
+
+            string[] teste = arquivo.Split('/');
+          
+
+            var sharedWithMe = await OneDriveApi.GetSharedWithMe();
+
+
+            if (sharedWithMe.Collection.Length == 0)
             {
-                EventHandler<OneDriveUploadProgressChangedEventArgs> progressHandler = delegate (object s, OneDriveUploadProgressChangedEventArgs a) { JsonResultTextBox.Text += $"Uploading - {a.BytesSent} bytes sent / {a.TotalBytes} bytes total ({a.ProgressPercentage}%){Environment.NewLine}"; };
-
-                string[] teste = e.FullPath.Split('\\');
-                var cliente = BuscaCliente(teste[0] + "/" + teste[1] + "/");
-
-                var sharedWithMe = await OneDriveApi.GetSharedWithMe();
-
-
-                if (sharedWithMe.Collection.Length == 0)
-                {
-                    JsonResultTextBox.Text = "No items are shared with this user";
-                    return;
-                }
-
-                //JsonResultTextBox.Text = $"Starting upload{Environment.NewLine}";
-                AppendTextBox($"Starting upload{Environment.NewLine}");
-
-                var sharedWithMeItem = sharedWithMe.Collection.First(item => item.RemoteItem.Folder != null);
-                var datas = await OneDriveApi.GetChildrenFromDriveByFolderId(sharedWithMeItem.RemoteItem.ParentReference.DriveId, sharedWithMeItem.Id);
-                var fg = datas.Collection.First(c => c.Name == cliente.Cnpj);
-                var data = await OneDriveApi.UploadFile(e.FullPath, fg);
-
-                OneDriveApi.UploadProgressChanged += progressHandler;
-                //await OneDriveApi.UploadFileAsBkp(e.FullPath,e.Name, sharedWithMeItem, fg.Id);
-                //var data = await OneDriveApi.UploadFileAs(e.FullPath, e.Name, await OneDriveApi.GetDriveClient(cliente.Cnpj));
-
-                OneDriveApi.UploadProgressChanged += progressHandler;
-                
-                OneDriveApi.UploadProgressChanged -= progressHandler;
-                AppendTextBox(data != null ? data.OriginalJson : "Not available");
-                // Display the result of the upload
-                //JsonResultTextBox.Text = data != null ? data.OriginalJson : "Not available";
-
-                DirectoryInfo diretorio = new DirectoryInfo(cliente.Configuracao.PastaBkp);
-                foreach (FileInfo item in diretorio.GetFiles())
-                {
-                    File.Delete(item.FullName);
-                }
+                JsonResultTextBox.Text = "No items are shared with this user";
+                return;
             }
+
+            AppendTextBox($"Iniciando  upload{Environment.NewLine}");
+
+
+
+            OneDriveApi.UploadProgressChanged += progressHandler;
+
+
+            var sharedWithMeItem = sharedWithMe.Collection.First(item => item.RemoteItem.Folder != null);
+            var datas = await OneDriveApi.GetChildrenFromDriveByFolderId(sharedWithMeItem.RemoteItem.ParentReference.DriveId, sharedWithMeItem.Id);
+            var fg = datas.Collection.First(c => c.Name == cliente.Cnpj);
+            var data = await OneDriveApi.UploadFile(arquivo, fg);
+            OneDriveApi.UploadProgressChanged -= progressHandler;
+
+            AppendTextBox(data != null ? data.OriginalJson : "Not available");
+
+            DirectoryInfo diretorio = new DirectoryInfo(cliente.Configuracao.PastaBkp);
+            foreach (FileInfo item in diretorio.GetFiles())
+            {
+                File.Delete(item.FullName);
+            }
+
         }
-
-        private void fileSystemWatcher1_Changed(object sender, FileSystemEventArgs e)
-        {
-
-        }
-        private void IniciarBkp(ConfiguracaoCliente cliente)
-        {
-
-        }
-
 
         private void AccessTokenValidTextBox_TextChanged(object sender, EventArgs e)
         {
             if (AccessTokenValidTextBox.Text != "")
             {
-                var MyIni = new IniFile("Settings.ini");
+             
                 FormBorderStyle = FormBorderStyle.SizableToolWindow;
                 JsonResultTextBox.Text = "Conectado com Sucesso...";
                 Notificacao.BalloonTipTitle = "OneDrive OpenNext";
@@ -397,7 +438,7 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
         {
             foreach (var item in _configuracao.Cliente.Where(x => x.Configuracao != null))
             {
-                //await OneDriveApi.GetFolderOrCreate(item.Cnpj);
+               
                 var sharedWithMe = await OneDriveApi.GetSharedWithMe();
 
 
@@ -430,8 +471,8 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
 
         private async void button3_Click(object sender, EventArgs e)
         {
-           var retorno = await OneDriveApi.GetSharedWithMe();
-           JsonResultTextBox.Text =  retorno == null ? "Nao gerou um retorno" : retorno.OriginalJson;
+            var retorno = await OneDriveApi.GetSharedWithMe();
+            JsonResultTextBox.Text = retorno == null ? "Nao gerou um retorno" : retorno.OriginalJson;
         }
 
         private async void button4_Click(object sender, EventArgs e)
@@ -477,7 +518,7 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
             JsonResultTextBox.Text = tt == null ? "Nao gerou um retorno" : tt.OriginalJson;
         }
 
-        private async  void button7_Click(object sender, EventArgs e)
+        private async void button7_Click(object sender, EventArgs e)
         {
             var fileToUpload = SelectLocalFile();
 
@@ -505,6 +546,22 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
             OneDriveApi.UploadProgressChanged -= progressHandler;
 
             JsonResultTextBox.Text = data != null ? data.OriginalJson : "Not available";
+        }
+
+        private void MainForm_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if(e.KeyChar == (char)Keys.Escape)
+            {
+
+                panelLogo.Visible = !panelLogo.Visible;
+            }
+        }
+
+      
+
+        private void MainForm_KeyUp(object sender, KeyEventArgs e)
+        {
+
         }
     }
 }

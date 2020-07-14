@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netcoreapp2.0;net452;net472</TargetFrameworks>
-    <AssemblyName>KoenZomers.OneDrive.Api</AssemblyName>
+    <AssemblyName>OpenNext.OneDrive.Api</AssemblyName>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>KoenZomers.OneDrive.Api.snk</AssemblyOriginatorKeyFile>
     <Version>2.3.1.0</Version>

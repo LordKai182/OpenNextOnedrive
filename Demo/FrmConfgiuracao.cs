@@ -1,14 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using KoenZomers.OneDrive.AuthenticatorApp;
+using Newtonsoft.Json;
 using OpenNextOneDrive.UserControls;
+using OpenNextOneDrive.Validacao;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace OpenNextOneDrive
@@ -16,8 +13,10 @@ namespace OpenNextOneDrive
     public partial class FrmConfgiuracao : Form
     {
         Configuracao _configuracao = new Configuracao();
-        ConfiguracaoCliente _cliente = new ConfiguracaoCliente();
+        ConfiguracaoCliente _cliente = new ConfiguracaoCliente();    
+        List<string> listaErros = new List<string>();
         ClienteControll myUserControlCli;
+        PostgreConfiguration myUserControlPostgre;
         AcessConfiguration myUserControlAccess;
         ConfiguracaoClienteConfiguracao _configAmbiente = new ConfiguracaoClienteConfiguracao();
         bool jsonprecarregado = false;
@@ -57,10 +56,10 @@ namespace OpenNextOneDrive
                 tabControlConfig.TabPages.Remove(tabAccess);
                 tabControlConfig.TabPages.Remove(tabPostgre);
                 tabControlConfig.TabPages.Remove(tabCliente);
-                PostgreConfiguration myUserControl;
-                myUserControl = new PostgreConfiguration();
-                myUserControl.Dock = DockStyle.Fill;
-                tabPostgre.Controls.Add(myUserControl);
+                
+                myUserControlPostgre = new PostgreConfiguration(_configAmbiente);
+                myUserControlPostgre.Dock = DockStyle.Fill;
+                tabPostgre.Controls.Add(myUserControlPostgre);
                 tabControlConfig.TabPages.Add(tabPostgre);
                
                 myUserControlCli = new ClienteControll(_cliente, 1);
@@ -91,7 +90,13 @@ namespace OpenNextOneDrive
         {    
             if(CbTipoConfiguracao.SelectedIndex == 1)
             {
+                myUserControlAccess._configuracaoAcess.TipoConfig = 1;
                 myUserControlCli._configuracao.Configuracao = myUserControlAccess._configuracaoAcess;
+            }
+            if (CbTipoConfiguracao.SelectedIndex == 0)
+            {
+                myUserControlPostgre._configuracaoAcess.TipoConfig = 2;
+                myUserControlCli._configuracao.Configuracao = myUserControlPostgre._configuracaoAcess;
             }
 
             _configuracao.ClientID = "51afccd5-ac7c-4513-951f-94fa5c0d6ece";
@@ -105,9 +110,75 @@ namespace OpenNextOneDrive
                 _configuracao.Cliente = new List<ConfiguracaoCliente>();
                 _configuracao.Cliente.Add(myUserControlCli._configuracao);
             }
-           
 
-            File.WriteAllText("config.json", JsonConvert.SerializeObject(_configuracao));
+            if (carregaValidacao())
+            {
+                File.WriteAllText("config.json", JsonConvert.SerializeObject(_configuracao));
+                if (File.Exists("config.json"))
+                {
+                    MainForm frm = new MainForm();
+                    frm.ShowDialog();
+                    this.Close();
+                }
+
+               
+            }
+            else
+            {
+                string Msg = string.Empty;
+                foreach (var item in listaErros)
+                {
+                    Msg += item + Environment.NewLine;
+                }
+
+                MessageBox.Show(this, Msg, "Erros", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            }
+        }
+
+
+        public bool carregaValidacao() {
+
+            ValidacaoEntrada valida = new ValidacaoEntrada();
+            listaErros = new List<string>();
+            foreach (var item in _configuracao.Cliente)
+            {
+                if ( item.Cnpj == null || !valida.IsCnpj(item.Cnpj))
+                {
+                    listaErros.Add(
+                        String.Format(" Cliente: {0} Erro: {1}", item.RazaoSocial, "CNPJ invalido")
+                        );
+                }
+                if(item.RazaoSocial == null)
+                {
+                    listaErros.Add(
+                       String.Format(" Cliente: {0} Erro: {1}", item.RazaoSocial, "Razao Social invalida")
+                       );
+                }
+                if(item.Email == null || !item.Email.Contains("@"))
+                {
+                    listaErros.Add(
+                      String.Format(" Cliente: {0} Erro: {1}", item.RazaoSocial, "E-mail Invalido")
+                      );
+                }
+                if (item.Telefone == string.Empty)
+                {
+                    listaErros.Add(
+                      String.Format(" Cliente: {0} Erro: {1}", item.RazaoSocial, "Telefone Invalido")
+                      );
+                }
+                if(item.Configuracao == null || item.Configuracao.CaminhoDump == null || item.Configuracao.PastaBkp == null)
+                {
+                    listaErros.Add(
+                     String.Format(" Cliente: {0} Erro: {1}", item.RazaoSocial, "Configuracao de Backup Invalida")
+                     );
+                }
+            }
+            if(listaErros.Count() > 0)
+            {
+                return false;
+            }
+            return true;
 
         }
 

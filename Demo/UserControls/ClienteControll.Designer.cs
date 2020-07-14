@@ -50,7 +50,7 @@
             // TxtCnpj
             // 
             this.TxtCnpj.Location = new System.Drawing.Point(22, 76);
-            this.TxtCnpj.Mask = "000.000.00/0000-00";
+            this.TxtCnpj.Mask = "00.000.000/0000-00";
             this.TxtCnpj.Name = "TxtCnpj";
             this.TxtCnpj.Size = new System.Drawing.Size(168, 22);
             this.TxtCnpj.TabIndex = 8;
