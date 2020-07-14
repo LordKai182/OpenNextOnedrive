@@ -232,7 +232,7 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
 
         private async void CreateFolderButton_Click(object sender, EventArgs e)
         {
-            var data = await OneDriveApi.GetFolderOrCreate("Test\\sub1\\sub2");
+            var data = await OneDriveApi.GetFolderOrCreate("PastaBkp");
             JsonResultTextBox.Text = data != null ? data.OriginalJson : "Not available";
         }
 
@@ -382,7 +382,7 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
             OneDriveApi.UploadProgressChanged += progressHandler;
 
 
-            var sharedWithMeItem = sharedWithMe.Collection.First(item => item.RemoteItem.Folder != null);
+            var sharedWithMeItem = sharedWithMe.Collection.First(item => item.RemoteItem.Name.Contains("Banco de Dados"));
             var datas = await OneDriveApi.GetChildrenFromDriveByFolderId(sharedWithMeItem.RemoteItem.ParentReference.DriveId, sharedWithMeItem.Id);
             var fg = datas.Collection.First(c => c.Name == cliente.Cnpj);
             var data = await OneDriveApi.UploadFile(arquivo, fg);
@@ -450,7 +450,7 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
 
 
 
-                var sharedWithMeItem = sharedWithMe.Collection.First(v => v.RemoteItem.Folder != null);
+                var sharedWithMeItem = sharedWithMe.Collection.First(v => v.RemoteItem.Name.Contains("Banco de Dados"));
                 var tt = await OneDriveApi.CreateFolderBanco(sharedWithMeItem.RemoteItem.ParentReference.DriveId, item.Cnpj);
             }
         }
@@ -488,7 +488,7 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
 
 
 
-            var sharedWithMeItem = sharedWithMe.Collection.First(item => item.RemoteItem.Folder != null);
+            var sharedWithMeItem = sharedWithMe.Collection.First(item => item.RemoteItem.Name == "Banco de Dados");
             var data = await OneDriveApi.GetChildrenFromDriveByFolderId(sharedWithMeItem.RemoteItem.ParentReference.DriveId, sharedWithMeItem.Id);
 
             JsonResultTextBox.Text = data != null ? data.OriginalJson : "Not available";
@@ -513,7 +513,7 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
 
 
 
-            var sharedWithMeItem = sharedWithMe.Collection.First(item => item.RemoteItem.Folder != null);
+            var sharedWithMeItem = sharedWithMe.Collection.First(item => item.RemoteItem.Name.Contains("Banco de Dados"));
             var tt = await OneDriveApi.CreateFolderBanco(sharedWithMeItem.RemoteItem.ParentReference.DriveId, "PastaBkp");
             JsonResultTextBox.Text = tt == null ? "Nao gerou um retorno" : tt.OriginalJson;
         }
@@ -538,7 +538,7 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
 
 
 
-            var sharedWithMeItem = sharedWithMe.Collection.First(item => item.RemoteItem.Folder != null);
+            var sharedWithMeItem = sharedWithMe.Collection.First(item => item.RemoteItem.Name.Contains("Banco de Dados"));
             var datas = await OneDriveApi.GetChildrenFromDriveByFolderId(sharedWithMeItem.RemoteItem.ParentReference.DriveId, sharedWithMeItem.Id);
             var fg = datas.Collection.First(c => c.Name == "PastaBkp");
             var data = await OneDriveApi.UploadFileViaSimpleUploadBkp2(fileToUpload, sharedWithMeItem, fg.Id);
