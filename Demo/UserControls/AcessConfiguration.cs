@@ -18,14 +18,8 @@ namespace OpenNextOneDrive.UserControls
         {
             InitializeComponent();
             _configuracaoAcess = configuracaoClienteConfiguracao;
-
-            //DateTimePicker TimerPiker = new DateTimePicker();
-            //TimerPiker.Format = DateTimePickerFormat.Custom;
-            //TimerPiker.CustomFormat = "HH:mm tt";
-            //TimerPiker.ShowUpDown = true;
-            //TimerPiker.Location = new Point(20, 160);
-            //TimerPiker.Width = 100;
-            //Controls.Add(TimerPiker);
+            CbHoraBkp.SelectedIndex = 0;
+          
         }
 
         public bool VerificaArquivo()
@@ -38,7 +32,7 @@ namespace OpenNextOneDrive.UserControls
                 {
                     TxtCaminhoAccess.Text = arquivo;
                     _configuracaoAcess.CaminhoDump = arquivo; 
-                    //arquivo.Substring(0, openFileDialog1.SafeFileName.Length);
+                   
 
                     return true;
                 }
@@ -70,7 +64,12 @@ namespace OpenNextOneDrive.UserControls
 
         private void AcessConfiguration_Load(object sender, EventArgs e)
         {
+            CbHoraBkp.SelectedIndex = 0;
+        }
 
+        private void CbHoraBkp_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            _configuracaoAcess.HoraBkp = CbHoraBkp.SelectedItem.ToString().Substring(0, 1);
         }
     }
 }

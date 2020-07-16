@@ -34,7 +34,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.button2 = new System.Windows.Forms.Button();
             this.TxtPastaBkp = new System.Windows.Forms.TextBox();
-            this.CbTipoConfiguracao = new System.Windows.Forms.ComboBox();
+            this.CbHoraBkp = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
@@ -94,22 +94,23 @@
             this.TxtPastaBkp.Size = new System.Drawing.Size(488, 30);
             this.TxtPastaBkp.TabIndex = 6;
             // 
-            // CbTipoConfiguracao
+            // CbHoraBkp
             // 
-            this.CbTipoConfiguracao.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CbTipoConfiguracao.FormattingEnabled = true;
-            this.CbTipoConfiguracao.Items.AddRange(new object[] {
+            this.CbHoraBkp.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CbHoraBkp.FormattingEnabled = true;
+            this.CbHoraBkp.Items.AddRange(new object[] {
             "3 Horas",
             "4 Horas",
             "5 Horas",
             "6 Horas",
             "7 Horas",
             "8 Horas"});
-            this.CbTipoConfiguracao.Location = new System.Drawing.Point(195, 171);
-            this.CbTipoConfiguracao.Margin = new System.Windows.Forms.Padding(4);
-            this.CbTipoConfiguracao.Name = "CbTipoConfiguracao";
-            this.CbTipoConfiguracao.Size = new System.Drawing.Size(168, 24);
-            this.CbTipoConfiguracao.TabIndex = 23;
+            this.CbHoraBkp.Location = new System.Drawing.Point(195, 171);
+            this.CbHoraBkp.Margin = new System.Windows.Forms.Padding(4);
+            this.CbHoraBkp.Name = "CbHoraBkp";
+            this.CbHoraBkp.Size = new System.Drawing.Size(168, 24);
+            this.CbHoraBkp.TabIndex = 23;
+            this.CbHoraBkp.SelectedIndexChanged += new System.EventHandler(this.CbHoraBkp_SelectedIndexChanged);
             // 
             // label3
             // 
@@ -124,7 +125,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.CbTipoConfiguracao);
+            this.Controls.Add(this.CbHoraBkp);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.button2);
@@ -147,7 +148,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.TextBox TxtPastaBkp;
-        private System.Windows.Forms.ComboBox CbTipoConfiguracao;
+        private System.Windows.Forms.ComboBox CbHoraBkp;
         private System.Windows.Forms.Label label3;
     }
 }

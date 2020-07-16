@@ -3,6 +3,7 @@ using KoenZomers.OneDrive.Api;
 using KoenZomers.OneDrive.Api.Entities;
 using Newtonsoft.Json;
 using OpenNextOneDrive;
+using OpenNextOneDrive.Tasks;
 using System;
 using System.Collections;
 using System.Configuration;
@@ -23,7 +24,7 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
 
         private readonly Configuration _configuration;
         ConfiguracaoCliente cliente = new ConfiguracaoCliente();
-
+        AgendadorTarefas _agendar = new AgendadorTarefas();
         public OneDriveApi OneDriveApi;
 
 
@@ -99,18 +100,20 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
             {
                  if (cCliente.Configuracao.TipoConfig == 1)
                 {
-                    AgendarTarefaAccess(
+                    _agendar.AgendarTarefaAccess(
                         "TarefaAccess" + cCliente.Cnpj,
                         cCliente.Configuracao.PastaBkp,
-                        cCliente.Configuracao.CaminhoDump
+                        cCliente.Configuracao.CaminhoDump,
+                        cCliente.Configuracao.HoraBkp
                         );
                 }
                 else
                 {
-                    AgendarTarefaPostgeSQL(
+                    _agendar.AgendarTarefaPostgeSQL(
                          "TarefaPostgreSQL" + cCliente.Cnpj,
                         cCliente.Configuracao.PastaBkp + "/Bkp.sql",
-                        cCliente.Configuracao.CaminhoDump
+                        cCliente.Configuracao.CaminhoDump,
+                        cCliente.Configuracao.HoraBkp
                         );
                 }
                
@@ -239,43 +242,9 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
 
         private void button1_Click(object sender, EventArgs e)
         {
-            AgendarTarefaPostgeSQL("TarefaTestePostgres", "C:/temp/BkpSql.sql", "C:/PostgreSQL/pg10/bin/pg_dump.exe");
-            AgendarTarefaAccess("TesteTarefaAcess", @"C:\temp", @"C:\temp2\BkpSql.mdb");
+          // _agendar.AgendarTarefaPostgeSQL("TarefaTestePostgres", "C:/temp/BkpSql.sql", "C:/PostgreSQL/pg10/bin/pg_dump.exe");
+           // _agendar.AgendarTarefaAccess("TesteTarefaAcess", @"C:\temp", @"C:\temp2\BkpSql.mdb");
         }
-        private void AgendarTarefaPostgeSQL(string NomeTarefa, string PastaBkp, string CaminhoDump)
-        {
-            char quote = '"';
-            string doubleQuotedPath = quote + PastaBkp + quote;
-            string comandoFormatado =
-            String.Format(@"schtasks /create /sc hourly /mo 1 /sd 03/01/2002 /tn  {0} /tr "+quote+" {2} -h 127.0.0.1 -p 5432 -U postgres -F c -b -v -f {1} SwitchDB "+ quote+" ",
-            NomeTarefa,
-            PastaBkp,
-            CaminhoDump
-            );
-            ExecutarCMD(comandoFormatado);
-        }
-
-        private void AgendarTarefaAccess(string NomeTarefa, string PastaBkp, string CaminhoArquivo)
-        {
-            char quote = '"';
-            string comandoFormatado =
-            String.Format(@"schtasks /create /sc hourly /mo 1 /sd 03/01/2002 /tn  {0} /tr " + quote + "cmd /c  copy {2} {1}" + quote + " ",
-            NomeTarefa,
-            PastaBkp,
-            CaminhoArquivo
-            );
-            ExecutarCMD(comandoFormatado);
-        }
-
-
-        public static string ExecutarCMD(string comando)
-        {
-            System.Diagnostics.Process.Start("CMD.exe", @"/C " + comando).WaitForExit();
-
-            return "Foi";
-
-        }
-
       
         private ConfiguracaoCliente BuscaCliente(string PastaBkp)
         {
@@ -557,11 +526,6 @@ namespace KoenZomers.OneDrive.AuthenticatorApp
             }
         }
 
-      
-
-        private void MainForm_KeyUp(object sender, KeyEventArgs e)
-        {
-
-        }
+     
     }
 }

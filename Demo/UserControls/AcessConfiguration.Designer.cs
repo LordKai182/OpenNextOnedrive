@@ -37,7 +37,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.CbTipoConfiguracao = new System.Windows.Forms.ComboBox();
+            this.CbHoraBkp = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // TxtCaminhoAccess
@@ -109,28 +109,29 @@
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
-            // CbTipoConfiguracao
+            // CbHoraBkp
             // 
-            this.CbTipoConfiguracao.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CbTipoConfiguracao.FormattingEnabled = true;
-            this.CbTipoConfiguracao.Items.AddRange(new object[] {
+            this.CbHoraBkp.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CbHoraBkp.FormattingEnabled = true;
+            this.CbHoraBkp.Items.AddRange(new object[] {
             "3 Horas",
             "4 Horas",
             "5 Horas",
             "6 Horas",
             "7 Horas",
             "8 Horas"});
-            this.CbTipoConfiguracao.Location = new System.Drawing.Point(189, 187);
-            this.CbTipoConfiguracao.Margin = new System.Windows.Forms.Padding(4);
-            this.CbTipoConfiguracao.Name = "CbTipoConfiguracao";
-            this.CbTipoConfiguracao.Size = new System.Drawing.Size(168, 24);
-            this.CbTipoConfiguracao.TabIndex = 21;
+            this.CbHoraBkp.Location = new System.Drawing.Point(189, 187);
+            this.CbHoraBkp.Margin = new System.Windows.Forms.Padding(4);
+            this.CbHoraBkp.Name = "CbHoraBkp";
+            this.CbHoraBkp.Size = new System.Drawing.Size(168, 24);
+            this.CbHoraBkp.TabIndex = 21;
+            this.CbHoraBkp.SelectedIndexChanged += new System.EventHandler(this.CbHoraBkp_SelectedIndexChanged);
             // 
             // AcessConfiguration
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.CbTipoConfiguracao);
+            this.Controls.Add(this.CbHoraBkp);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.label2);
@@ -157,6 +158,6 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
-        private System.Windows.Forms.ComboBox CbTipoConfiguracao;
+        private System.Windows.Forms.ComboBox CbHoraBkp;
     }
 }

@@ -9,13 +9,15 @@ namespace OpenNextOneDrive.UserControls
         public PostgreConfiguration()
         {
             InitializeComponent();
-         
+            CbHoraBkp.SelectedIndex = 0;
+
         }
 
         public PostgreConfiguration(ConfiguracaoClienteConfiguracao configuracaoAcess)
         {
             InitializeComponent();
             _configuracaoAcess = configuracaoAcess;
+            CbHoraBkp.SelectedIndex = 0;
         }
 
         public bool VerificaArquivo()
@@ -56,6 +58,11 @@ namespace OpenNextOneDrive.UserControls
         private void button2_Click(object sender, System.EventArgs e)
         {
             VarificaPasta();
+        }
+
+        private void CbHoraBkp_SelectedIndexChanged(object sender, System.EventArgs e)
+        {
+            _configuracaoAcess.HoraBkp = CbHoraBkp.SelectedItem.ToString().Substring(0, 1);
         }
     }
 }
